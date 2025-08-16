@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoTracker - Monitor de Criptomonedas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-coins"></i> CryptoTracker</h1>
+                <div class="header-controls">
+                    <button id="themeToggle" class="btn-icon" title="Cambiar tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button id="exportBtn" class="btn-icon" title="Exportar datos">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button id="importBtn" class="btn-icon" title="Importar datos">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Portfolio Summary -->
+            <section class="portfolio-summary">
+                <div class="summary-card">
+                    <h3>Valor Total del Portfolio</h3>
+                    <div class="total-value">
+                        <span id="totalUSD">$0.00</span>
+                        <span id="totalEUR">€0.00</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Crypto Cards -->
+            <section class="crypto-grid" id="cryptoGrid">
+                <!-- Las tarjetas de criptomonedas se generarán dinámicamente -->
+            </section>
+
+            <!-- Chart Section -->
+            <section class="chart-section">
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
