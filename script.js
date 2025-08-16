@@ -537,9 +537,25 @@ class CryptoTracker {
 
   exportData() {
     const exportData = {
+      // Datos del portfolio
       portfolioAmounts: AppState.portfolioAmounts,
+
+      // Configuración y preferencias
+      configuration: {
+        selectedCryptos: CONFIG.selectedCryptos,
+        updateInterval: CONFIG.updateInterval,
+        chartUpdateInterval: CONFIG.chartUpdateInterval,
+        chartCrypto: CONFIG.chartCrypto,
+        chartDays: CONFIG.chartDays,
+      },
+
+      // Preferencias de tema
+      theme: AppState.theme,
+
+      // Metadatos
       exportDate: new Date().toISOString(),
-      version: "1.0",
+      version: "2.0",
+      appName: "CryptoTracker",
     };
 
     const dataStr = JSON.stringify(exportData, null, 2);
@@ -547,10 +563,19 @@ class CryptoTracker {
 
     const link = document.createElement("a");
     link.href = URL.createObjectURL(dataBlob);
-    link.download = `crypto-portfolio-${
+    link.download = `cryptotracker-backup-${
       new Date().toISOString().split("T")[0]
     }.json`;
     link.click();
+
+    // Mostrar mensaje de confirmación
+    alert(
+      `✅ Backup exportado correctamente!\n\n📊 Portfolio: ${
+        Object.keys(AppState.portfolioAmounts).length
+      } criptomonedas\n⚙️ Configuración: ${
+        CONFIG.selectedCryptos.length
+      } cryptos seleccionadas\n🎨 Tema: ${AppState.theme}`
+    );
   }
 
   async importData(file) {
@@ -560,28 +585,99 @@ class CryptoTracker {
       const text = await file.text();
       const data = JSON.parse(text);
 
+      // Verificar que es un archivo válido
+      if (!data.portfolioAmounts && !data.configuration) {
+        alert(
+          "❌ Formato de archivo inválido\n\nEl archivo debe contener datos de CryptoTracker."
+        );
+        return;
+      }
+
+      let importedItems = [];
+
+      // Importar datos del portfolio
       if (data.portfolioAmounts) {
         AppState.portfolioAmounts = data.portfolioAmounts;
-
-        // Actualizar los inputs
-        Object.keys(AppState.portfolioAmounts).forEach((cryptoId) => {
-          const input = document.getElementById(`amount-${cryptoId}`);
-          if (input) {
-            input.value = AppState.portfolioAmounts[cryptoId];
-          }
-        });
-
-        this.updateCryptoCards();
-        this.updatePortfolioSummary();
-        await this.savePortfolioData();
-
-        alert("Datos importados correctamente");
-      } else {
-        alert("Formato de archivo inválido");
+        importedItems.push(
+          `📊 Portfolio: ${
+            Object.keys(data.portfolioAmounts).length
+          } criptomonedas`
+        );
       }
+
+      // Importar configuración
+      if (data.configuration) {
+        // Validar que las criptomonedas seleccionadas existen
+        const validCryptos =
+          data.configuration.selectedCryptos?.filter((cryptoId) =>
+            AVAILABLE_CRYPTOS.some((crypto) => crypto.id === cryptoId)
+          ) || CONFIG.selectedCryptos;
+
+        CONFIG.selectedCryptos = validCryptos;
+        CONFIG.updateInterval =
+          data.configuration.updateInterval || CONFIG.updateInterval;
+        CONFIG.chartUpdateInterval =
+          data.configuration.chartUpdateInterval || CONFIG.chartUpdateInterval;
+        CONFIG.chartCrypto =
+          data.configuration.chartCrypto || CONFIG.chartCrypto;
+        CONFIG.chartDays = data.configuration.chartDays || CONFIG.chartDays;
+
+        // Guardar configuración
+        localStorage.setItem("cryptoTrackerConfig", JSON.stringify(CONFIG));
+
+        importedItems.push(
+          `⚙️ Configuración: ${validCryptos.length} cryptos seleccionadas`
+        );
+        importedItems.push(
+          `⏱️ Intervalos: ${CONFIG.updateInterval / 1000}s precios, ${
+            CONFIG.chartUpdateInterval / 60000
+          }min gráficos`
+        );
+      }
+
+      // Importar tema
+      if (data.theme) {
+        AppState.theme = data.theme;
+        localStorage.setItem("theme", AppState.theme);
+        this.applyTheme();
+        importedItems.push(`🎨 Tema: ${data.theme}`);
+      }
+
+      // Aplicar todos los cambios
+      this.clearIntervals();
+      await this.fetchCryptoData();
+      this.renderCryptoCards();
+
+      // Actualizar los inputs del portfolio
+      Object.keys(AppState.portfolioAmounts).forEach((cryptoId) => {
+        const input = document.getElementById(`amount-${cryptoId}`);
+        if (input) {
+          input.value = AppState.portfolioAmounts[cryptoId];
+        }
+      });
+
+      this.updateCryptoCards();
+      this.updatePortfolioSummary();
+      await this.updateChart();
+      this.startPeriodicUpdates();
+      await this.savePortfolioData();
+
+      // Mostrar mensaje de confirmación detallado
+      const versionInfo = data.version ? `\n📦 Versión: ${data.version}` : "";
+      const dateInfo = data.exportDate
+        ? `\n📅 Exportado: ${new Date(data.exportDate).toLocaleString()}`
+        : "";
+
+      alert(
+        `✅ Backup importado correctamente!\n\n${importedItems.join(
+          "\n"
+        )}${versionInfo}${dateInfo}`
+      );
     } catch (error) {
       console.error("Error importing data:", error);
-      alert("Error al importar el archivo");
+      alert(
+        "❌ Error al importar el archivo\n\nVerifica que el archivo sea un backup válido de CryptoTracker."
+      );
     }
   }
 
