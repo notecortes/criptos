@@ -1,64 +1,160 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CryptoTracker - Monitor de Criptomonedas</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1><i class="fas fa-coins"></i> CryptoTracker</h1>
-                <div class="header-controls">
-                    <button id="themeToggle" class="btn-icon" title="Cambiar tema">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <button id="exportBtn" class="btn-icon" title="Exportar datos">
-                        <i class="fas fa-download"></i>
-                    </button>
-                    <button id="importBtn" class="btn-icon" title="Importar datos">
-                        <i class="fas fa-upload"></i>
-                    </button>
-                    <input type="file" id="importFile" accept=".json" style="display: none;">
-                </div>
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <h1><i class="fas fa-coins"></i> CryptoTracker</h1>
+          <div class="header-controls">
+            <button id="themeToggle" class="btn-icon" title="Cambiar tema">
+              <i class="fas fa-moon"></i>
+            </button>
+            <button id="exportBtn" class="btn-icon" title="Exportar datos">
+              <i class="fas fa-download"></i>
+            </button>
+            <button id="importBtn" class="btn-icon" title="Importar datos">
+              <i class="fas fa-upload"></i>
+            </button>
+            <button id="settingsBtn" class="btn-icon" title="Configuración">
+              <i class="fas fa-cog"></i>
+            </button>
+            <input
+              type="file"
+              id="importFile"
+              accept=".json"
+              style="display: none"
+            />
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Portfolio Summary -->
+        <section class="portfolio-summary">
+          <div class="summary-card">
+            <h3>Valor Total del Portfolio</h3>
+            <div class="total-value">
+              <span id="totalUSD">$0.00</span>
+              <span id="totalEUR">€0.00</span>
             </div>
-        </header>
+          </div>
+        </section>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Portfolio Summary -->
-            <section class="portfolio-summary">
-                <div class="summary-card">
-                    <h3>Valor Total del Portfolio</h3>
-                    <div class="total-value">
-                        <span id="totalUSD">$0.00</span>
-                        <span id="totalEUR">€0.00</span>
-                    </div>
-                </div>
-            </section>
+        <!-- Crypto Cards -->
+        <section class="crypto-grid" id="cryptoGrid">
+          <!-- Las tarjetas de criptomonedas se generarán dinámicamente -->
+        </section>
 
-            <!-- Crypto Cards -->
-            <section class="crypto-grid" id="cryptoGrid">
-                <!-- Las tarjetas de criptomonedas se generarán dinámicamente -->
-            </section>
+        <!-- Chart Section -->
+        <section class="chart-section">
+          <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+          </div>
+        </section>
+      </main>
 
-            <!-- Chart Section -->
-            <section class="chart-section">
-                <div class="chart-container">
-                    <canvas id="priceChart"></canvas>
-                </div>
-            </section>
-        </main>
+      <!-- Modal de Configuración -->
+      <div id="settingsModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2><i class="fas fa-cog"></i> Configuración</h2>
+            <button id="closeSettings" class="btn-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Configuración de Criptomonedas -->
+            <div class="config-section">
+              <h3><i class="fas fa-coins"></i> Criptomonedas a Mostrar</h3>
+              <p class="config-description">
+                Selecciona las criptomonedas que quieres monitorear:
+              </p>
+              <div id="cryptoSelection" class="crypto-selection">
+                <!-- Se generará dinámicamente -->
+              </div>
+            </div>
+
+            <!-- Configuración de Intervalos -->
+            <div class="config-section">
+              <h3><i class="fas fa-clock"></i> Intervalos de Actualización</h3>
+
+              <div class="config-item">
+                <label for="priceInterval">Actualización de Precios:</label>
+                <select id="priceInterval" class="config-select">
+                  <option value="10000">10 segundos</option>
+                  <option value="30000">30 segundos</option>
+                  <option value="60000">1 minuto</option>
+                  <option value="120000">2 minutos</option>
+                  <option value="300000">5 minutos</option>
+                </select>
+              </div>
+
+              <div class="config-item">
+                <label for="chartInterval">Actualización de Gráficos:</label>
+                <select id="chartInterval" class="config-select">
+                  <option value="60000">1 minuto</option>
+                  <option value="300000">5 minutos</option>
+                  <option value="600000">10 minutos</option>
+                  <option value="1800000">30 minutos</option>
+                  <option value="3600000">1 hora</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Configuración de Gráfico -->
+            <div class="config-section">
+              <h3>
+                <i class="fas fa-chart-line"></i> Configuración del Gráfico
+              </h3>
+
+              <div class="config-item">
+                <label for="chartCrypto">Criptomoneda del Gráfico:</label>
+                <select id="chartCrypto" class="config-select">
+                  <!-- Se generará dinámicamente -->
+                </select>
+              </div>
+
+              <div class="config-item">
+                <label for="chartDays">Período de Datos:</label>
+                <select id="chartDays" class="config-select">
+                  <option value="1">1 día</option>
+                  <option value="7">7 días</option>
+                  <option value="30">30 días</option>
+                  <option value="90">90 días</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button id="resetSettings" class="btn-secondary">
+              <i class="fas fa-undo"></i> Restablecer
+            </button>
+            <button id="saveSettings" class="btn-primary">
+              <i class="fas fa-save"></i> Guardar Configuración
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
