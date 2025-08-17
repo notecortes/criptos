@@ -128,6 +128,7 @@ const AppState = {
   },
 };
 
+
 // Clase principal de la aplicación
 class CryptoTracker {
   constructor() {
@@ -137,7 +138,8 @@ class CryptoTracker {
   async initializeApp() {
     try {
       console.log('Starting app initialization...');
-      
+      await this.fetchAllCryptoImages(); // <--- NUEVO
+
       await this.loadConfiguration();
       console.log('Configuration loaded');
       
@@ -187,7 +189,18 @@ class CryptoTracker {
       `;
     }
   }
-
+// NUEVA FUNCIÓN:
+async fetchAllCryptoImages() {
+  // Obtener ids de todas las monedas de tu lista
+  const ids = AVAILABLE_CRYPTOS.map(c => c.id).join(',');
+  const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  AppState.cryptoImages = {};
+  data.forEach(coin => {
+    AppState.cryptoImages[coin.id] = coin.image;
+  });
+}
   setupEventListeners() {
     // Toggle de tema
     document.getElementById("themeToggle").addEventListener("click", () => {
@@ -878,9 +891,18 @@ class CryptoTracker {
     AVAILABLE_CRYPTOS.forEach((crypto) => {
       const isSelected = CONFIG.selectedCryptos.includes(crypto.id);
       const checkboxDiv = document.createElement("div");
+
+      /*const imgSrc =
+        AppState.cryptoData[crypto.id]?.image ||
+        `https://assets.coingecko.com/coins/images/${crypto.imageId}/small/${crypto.id}.png`;
+      */
+      const imgSrc =
+        AppState.cryptoImages?.[crypto.id] ||
+        `https://assets.coingecko.com/coins/images/${crypto.imageId}/small/${crypto.id}.png`;
+
       checkboxDiv.className = `crypto-checkbox ${isSelected ? "selected" : ""}`;
 
-      checkboxDiv.innerHTML = `
+      /*checkboxDiv.innerHTML = `
                 <input type="checkbox" id="crypto-${crypto.id}" ${
         isSelected ? "checked" : ""
       }>
@@ -898,6 +920,19 @@ class CryptoTracker {
                     </div>
                 </div>
             `;
+            */
+      checkboxDiv.innerHTML = `
+      <input type="checkbox" id="crypto-${crypto.id}" ${isSelected ? "checked" : ""}>
+      <div class="crypto-checkbox-info">
+          <img src="${imgSrc}" 
+              alt="${crypto.name}" class="crypto-checkbox-icon"
+              onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTIiIGZpbGw9IiMzNDk4ZGIiLz4KPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPiR7crypto.symbol}</dGV4dD4KPC9zdmc+'">
+          <div class="crypto-checkbox-text">
+              <span class="crypto-checkbox-name">${crypto.name}</span>
+              <span class="crypto-checkbox-symbol">${crypto.symbol}</span>
+          </div>
+      </div>
+    `;
 
       // Event listener para el checkbox
       const checkbox = checkboxDiv.querySelector('input[type="checkbox"]');
