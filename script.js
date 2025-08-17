@@ -95,6 +95,7 @@ const AVAILABLE_CRYPTOS = [
   { id: "gala", name: "Gala", symbol: "GALA", imageId: "12493" },
   { id: "immutable-x", name: "Immutable X", symbol: "IMX", imageId: "17233" },
   { id: "apecoin", name: "ApeCoin", symbol: "APE", imageId: "18876" },
+  { id: "deepspace", name: "deepspace", symbol: "deepspace", imageId: "17953" },
 ];
 
 // Configuración por defecto
