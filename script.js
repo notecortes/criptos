@@ -298,43 +298,41 @@ class CryptoTracker {
     }
   }
 
+  // Cambia fetchCryptoData para guardar la URL de imagen de la API:
   async fetchCryptoData() {
     try {
       const selectedCryptos = this.getSelectedCryptos();
       const ids = selectedCryptos.map((crypto) => crypto.id).join(",");
-      
+      // Usamos el endpoint markets para obtener la imagen correcta
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`
       );
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
       selectedCryptos.forEach((crypto) => {
-        if (data[crypto.id]) {
+        const coin = data.find((c) => c.id === crypto.id);
+        if (coin) {
           AppState.cryptoData[crypto.id] = {
             ...crypto,
-            price: data[crypto.id].usd || 0,
-            change24h: data[crypto.id].usd_24h_change || 0,
+            price: coin.current_price || 0,
+            change24h: coin.price_change_percentage_24h || 0,
+            image: coin.image, // URL de imagen correcta
           };
         } else {
-          // Añadir datos por defecto para evitar errores
           AppState.cryptoData[crypto.id] = {
             ...crypto,
             price: 0,
             change24h: 0,
+            image: "", // fallback vacío
           };
         }
       });
 
       this.updateCryptoCards();
       this.updatePortfolioSummary();
-      
-      // Verificar alertas si están disponibles
-      if (typeof alertsManager !== 'undefined') {
+
+      if (typeof alertsManager !== "undefined") {
         alertsManager.checkAlerts(AppState.cryptoData);
       }
     } catch (error) {
@@ -377,68 +375,62 @@ class CryptoTracker {
     });
   }
 
+  // Modifica createCryptoCard para usar la imagen de la API y el formateo correcto:
   createCryptoCard(crypto) {
     const card = document.createElement("div");
     card.className = "crypto-card";
+    // Usa la imagen de la API si está disponible, si no, intenta la antigua, y si tampoco, muestra SVG fallback
+    const imgSrc =
+      AppState.cryptoData[crypto.id]?.image ||
+      `https://assets.coingecko.com/coins/images/${crypto.imageId}/small/${crypto.id}.png`;
     card.innerHTML = `
-            <div class="crypto-header">
-                <img src="https://assets.coingecko.com/coins/images/${
-                  crypto.imageId
-                }/small/${crypto.id}.png" 
-                     alt="${crypto.name}" class="crypto-icon" 
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMzNDk4ZGIiLz4KPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj4ke crypto.symbol}</dGV4dD4KPC9zdmc+'">
-                <div class="crypto-info">
-                    <h3>${crypto.name}</h3>
-                    <span class="crypto-symbol">${crypto.symbol}</span>
-                </div>
-            </div>
-            
-            <div class="crypto-prices">
-                <div class="price-item">
-                    <div class="price-label">Precio USD</div>
-                    <div class="price-value" id="price-usd-${crypto.id}">
-                        <div class="loading"></div>
-                    </div>
-                    <div class="price-change" id="change-${crypto.id}"></div>
-                </div>
-                <div class="price-item">
-                    <div class="price-label">Precio EUR</div>
-                    <div class="price-value" id="price-eur-${crypto.id}">
-                        <div class="loading"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="amount-input-group">
-                <label for="amount-${crypto.id}">Cantidad que posees:</label>
-                <input type="number" 
-                       id="amount-${crypto.id}" 
-                       class="amount-input" 
-                       placeholder="0.00" 
-                       step="0.00000001"
-                       value="${AppState.portfolioAmounts[crypto.id] || ""}"
-                       onchange="cryptoTracker.updatePortfolioAmount('${
-                         crypto.id
-                       }', this.value)">
-            </div>
-            
-            <div class="portfolio-value">
-                <div class="portfolio-item">
-                    <div class="portfolio-label">Valor USD</div>
-                    <div class="portfolio-amount" id="portfolio-usd-${
-                      crypto.id
-                    }">$0.00</div>
-                </div>
-                <div class="portfolio-item">
-                    <div class="portfolio-label">Valor EUR</div>
-                    <div class="portfolio-amount" id="portfolio-eur-${
-                      crypto.id
-                    }">€0.00</div>
-                </div>
-            </div>
-        `;
-    return card;
-  }
+    <div class="crypto-header">
+      <img src="${imgSrc}" 
+           alt="${crypto.name}" class="crypto-icon" 
+           onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMzNDk4ZGIiLz4KPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj4ke crypto.symbol}</dGV4dD4KPC9zdmc+'">
+      <div class="crypto-info">
+        <h3>${crypto.name}</h3>
+        <span class="crypto-symbol">${crypto.symbol}</span>
+      </div>
+    </div>
+    <div class="crypto-prices">
+      <div class="price-item">
+        <div class="price-label">Precio USD</div>
+        <div class="price-value" id="price-usd-${crypto.id}">
+          <div class="loading"></div>
+        </div>
+        <div class="price-change" id="change-${crypto.id}"></div>
+      </div>
+      <div class="price-item">
+        <div class="price-label">Precio EUR</div>
+        <div class="price-value" id="price-eur-${crypto.id}">
+          <div class="loading"></div>
+        </div>
+      </div>
+    </div>
+    <div class="amount-input-group">
+      <label for="amount-${crypto.id}">Cantidad que posees:</label>
+      <input type="number" 
+             id="amount-${crypto.id}" 
+             class="amount-input" 
+             placeholder="0.00" 
+             step="0.00000001"
+             value="${AppState.portfolioAmounts[crypto.id] || ""}"
+             onchange="cryptoTracker.updatePortfolioAmount('${crypto.id}', this.value)">
+    </div>
+    <div class="portfolio-value">
+      <div class="portfolio-item">
+        <div class="portfolio-label">Valor USD</div>
+        <div class="portfolio-amount" id="portfolio-usd-${crypto.id}">$0.00</div>
+      </div>
+      <div class="portfolio-item">
+        <div class="portfolio-label">Valor EUR</div>
+        <div class="portfolio-amount" id="portfolio-eur-${crypto.id}">€0.00</div>
+      </div>
+    </div>
+  `;
+  return card;
+}
 
   getSelectedCryptos() {
     return AVAILABLE_CRYPTOS.filter((crypto) =>
@@ -494,12 +486,13 @@ class CryptoTracker {
       const changeEl = document.getElementById(`change-${crypto.id}`);
 
       if (priceUsdEl) {
-        priceUsdEl.textContent = this.formatPrice(crypto.price);
+        priceUsdEl.textContent = formatPrice(crypto.symbol, crypto.price);
       }
 
       if (priceEurEl) {
         const eurPrice = crypto.price * AppState.exchangeRates.eur;
-        priceEurEl.textContent = `€${eurPrice < 0.01 ? eurPrice.toFixed(6) : eurPrice.toFixed(2)}`;
+        priceEurEl.textContent =
+          "€" + (eurPrice < 0.01 ? eurPrice.toFixed(6) : eurPrice.toFixed(2));
       }
 
       if (changeEl) {
