@@ -243,6 +243,32 @@ class CryptoTracker {
         this.updateChartType(chartType);
       });
     });
+
+    // Mostrar modales
+    document.getElementById('alertsBtn').addEventListener('click', () => {
+      document.getElementById('alertsModal').style.display = 'block';
+    });
+    document.getElementById('analysisBtn').addEventListener('click', () => {
+      document.getElementById('analysisModal').style.display = 'block';
+    });
+
+    // Cerrar modales
+    document.getElementById('closeAlerts').addEventListener('click', () => {
+      document.getElementById('alertsModal').style.display = 'none';
+    });
+    document.getElementById('closeAnalysis').addEventListener('click', () => {
+      document.getElementById('analysisModal').style.display = 'none';
+    });
+
+    // Opcional: cerrar modal al hacer click fuera del contenido
+    window.addEventListener('click', function(event) {
+      if (event.target === document.getElementById('alertsModal')) {
+        document.getElementById('alertsModal').style.display = 'none';
+      }
+      if (event.target === document.getElementById('analysisModal')) {
+        document.getElementById('analysisModal').style.display = 'none';
+      }
+    });
   }
 
   toggleTheme() {
@@ -1839,3 +1865,17 @@ document.addEventListener("DOMContentLoaded", () => {
   technicalAnalysis = new TechnicalAnalysis();
   pwaManager = new PWAManager();
 });
+
+function formatPrice(symbol, price) {
+  if (symbol.toLowerCase() === 'pepe' && price < 0.01) {
+    return '$' + price.toFixed(8);
+  }
+  if (price < 1) {
+    return '$' + price.toFixed(6);
+  }
+  return '$' + price.toFixed(2);
+}
+
+// Cuando generes la tarjeta de PEPE (y otras), usa:
+// const pepePrice = formatPrice('pepe', precioDePepe);
+// y así para las demás monedas
