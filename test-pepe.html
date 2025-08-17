@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test PEPE ID</title>
+</head>
+<body>
+    <h1>Testing PEPE IDs</h1>
+    <div id="results"></div>
+
+    <script>
+        async function testPepeIds() {
+            const possibleIds = [
+                'pepe',
+                'pepecoin',
+                'pepe-2', 
+                'pepecoin-2',
+                'pepe-coin',
+                'pepe-token',
+                'pepe-meme'
+            ];
+            
+            const results = document.getElementById('results');
+            
+            for (const id of possibleIds) {
+                try {
+                    console.log(`Testing ID: ${id}`);
+                    const response = await fetch(
+                        `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd&include_24hr_change=true`
+                    );
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data[id]) {
+                            results.innerHTML += `<p>✅ <strong>${id}</strong>: $${data[id].usd} (${data[id].usd_24h_change?.toFixed(2)}%)</p>`;
+                        } else {
+                            results.innerHTML += `<p>❌ ${id}: No data in response</p>`;
+                        }
+                    } else {
+                        results.innerHTML += `<p>❌ ${id}: HTTP ${response.status}</p>`;
+                    }
+                } catch (error) {
+                    results.innerHTML += `<p>❌ ${id}: ${error.message}</p>`;
+                }
+                
+                // Esperar un poco entre requests para evitar rate limiting
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+        
+        // Ejecutar test al cargar la página
+        testPepeIds();
+    </script>
+</body>
+</html>

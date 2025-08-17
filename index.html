@@ -4,12 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CryptoTracker - Monitor de Criptomonedas</title>
+    <meta
+      name="description"
+      content="Aplicación para monitorear criptomonedas en tiempo real con alertas y análisis técnico"
+    />
+    <meta name="theme-color" content="#3498db" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="CryptoTracker" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Favicons -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzM0OThkYiIvPgo8c3ZnIHg9IjgiIHk9IjgiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMiAxNWwtNS01aDNWOGg0djRoM2wtNSA1eiIvPgo8L3N2Zz4KPC9zdmc+"
+    />
+
     <link rel="stylesheet" href="styles.css" />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
   </head>
@@ -28,6 +48,12 @@
             </button>
             <button id="importBtn" class="btn-icon" title="Importar datos">
               <i class="fas fa-upload"></i>
+            </button>
+            <button id="alertsBtn" class="btn-icon" title="Alertas de Precio">
+              <i class="fas fa-bell"></i>
+            </button>
+            <button id="analysisBtn" class="btn-icon" title="Análisis Técnico">
+              <i class="fas fa-chart-bar"></i>
             </button>
             <button id="settingsBtn" class="btn-icon" title="Configuración">
               <i class="fas fa-cog"></i>
@@ -62,10 +88,45 @@
 
         <!-- Chart Section -->
         <section class="chart-section">
+          <div class="chart-header">
+            <h3 id="chartTitle">Gráfico de Precios</h3>
+            <div class="chart-controls">
+              <button
+                id="chartTypeBtn"
+                class="btn-chart active"
+                data-type="price"
+              >
+                Precio
+              </button>
+              <button id="chartVolumeBtn" class="btn-chart" data-type="volume">
+                Volumen
+              </button>
+              <button
+                id="chartAnalysisBtn"
+                class="btn-chart"
+                data-type="analysis"
+              >
+                Análisis
+              </button>
+            </div>
+          </div>
           <div class="chart-container">
             <canvas id="priceChart"></canvas>
           </div>
+          <div
+            id="technicalIndicators"
+            class="technical-indicators"
+            style="display: none"
+          >
+            <!-- Indicadores técnicos se generarán aquí -->
+          </div>
         </section>
+
+        <!-- Offline Status -->
+        <div id="offlineStatus" class="offline-status" style="display: none">
+          <i class="fas fa-wifi-slash"></i>
+          <span>Modo Offline - Mostrando datos guardados</span>
+        </div>
       </main>
 
       <!-- Modal de Configuración -->
@@ -152,9 +213,165 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal de Alertas -->
+      <div id="alertsModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2><i class="fas fa-bell"></i> Alertas de Precio</h2>
+            <button id="closeAlerts" class="btn-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="alerts-section">
+              <h3>Crear Nueva Alerta</h3>
+              <div class="alert-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="alertCrypto">Criptomoneda:</label>
+                    <select id="alertCrypto" class="config-select">
+                      <!-- Se generará dinámicamente -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="alertType">Tipo de Alerta:</label>
+                    <select id="alertType" class="config-select">
+                      <option value="above">Precio por encima de</option>
+                      <option value="below">Precio por debajo de</option>
+                      <option value="change">Cambio porcentual</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="alertValue">Valor:</label>
+                    <input
+                      type="number"
+                      id="alertValue"
+                      class="amount-input"
+                      placeholder="0.00"
+                      step="0.01"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="alertEnabled">Activar Notificaciones:</label>
+                    <label class="switch">
+                      <input type="checkbox" id="alertEnabled" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+                <button id="createAlert" class="btn-primary">
+                  <i class="fas fa-plus"></i> Crear Alerta
+                </button>
+              </div>
+            </div>
+
+            <div class="alerts-list">
+              <h3>Alertas Activas</h3>
+              <div id="activeAlerts" class="active-alerts">
+                <!-- Las alertas se generarán dinámicamente -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de Análisis Técnico -->
+      <div id="analysisModal" class="modal">
+        <div class="modal-content analysis-modal">
+          <div class="modal-header">
+            <h2><i class="fas fa-chart-bar"></i> Análisis Técnico</h2>
+            <button id="closeAnalysis" class="btn-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="analysis-controls">
+              <div class="form-group">
+                <label for="analysisCrypto">Criptomoneda:</label>
+                <select id="analysisCrypto" class="config-select">
+                  <!-- Se generará dinámicamente -->
+                </select>
+              </div>
+              <div class="indicator-toggles">
+                <label class="indicator-toggle">
+                  <input type="checkbox" id="showMA" checked />
+                  <span>Media Móvil (MA)</span>
+                </label>
+                <label class="indicator-toggle">
+                  <input type="checkbox" id="showRSI" />
+                  <span>RSI</span>
+                </label>
+                <label class="indicator-toggle">
+                  <input type="checkbox" id="showMACD" />
+                  <span>MACD</span>
+                </label>
+                <label class="indicator-toggle">
+                  <input type="checkbox" id="showBollinger" />
+                  <span>Bandas de Bollinger</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="analysis-results">
+              <div class="analysis-summary">
+                <h3>Resumen del Análisis</h3>
+                <div id="analysisSummary" class="summary-grid">
+                  <!-- Resumen se generará dinámicamente -->
+                </div>
+              </div>
+
+              <div class="technical-chart">
+                <canvas id="technicalChart"></canvas>
+              </div>
+
+              <div class="indicators-panel">
+                <div id="indicatorsData" class="indicators-data">
+                  <!-- Datos de indicadores se generarán dinámicamente -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PWA Install Prompt -->
+      <div id="installPrompt" class="install-prompt" style="display: none">
+        <div class="install-content">
+          <i class="fas fa-mobile-alt"></i>
+          <div class="install-text">
+            <h4>Instalar CryptoTracker</h4>
+            <p>Añade la app a tu pantalla de inicio para acceso rápido</p>
+          </div>
+          <div class="install-actions">
+            <button id="installApp" class="btn-primary">Instalar</button>
+            <button id="dismissInstall" class="btn-secondary">Ahora no</button>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
+    <script>
+      // Registrar Service Worker
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((registration) => {
+              console.log("SW registered: ", registration);
+            })
+            .catch((registrationError) => {
+              console.log("SW registration failed: ", registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
