@@ -13,6 +13,7 @@ const AVAILABLE_CRYPTOS = [
   { id: "uniswap", name: "Uniswap", symbol: "UNI", imageId: "12504" },
   { id: "dogecoin", name: "Dogecoin", symbol: "DOGE", imageId: "5" },
   { id: "shiba-inu", name: "Shiba Inu", symbol: "SHIB", imageId: "18323" },
+  { id: "pepe", name: "Pepe", symbol: "PEPE", imageId: "29850" },
   { id: "ripple", name: "XRP", symbol: "XRP", imageId: "44" },
   { id: "stellar", name: "Stellar", symbol: "XLM", imageId: "100" },
   { id: "cosmos", name: "Cosmos", symbol: "ATOM", imageId: "3794" },

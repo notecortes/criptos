@@ -26,12 +26,33 @@ Una aplicación web moderna y responsive para monitorear el precio de criptomone
 
 ## 📱 Criptomonedas Incluidas
 
-- Bitcoin (BTC)
-- Ethereum (ETH)
-- Binance Coin (BNB)
-- Cardano (ADA)
-- Solana (SOL)
-- Polkadot (DOT)
+### 🏆 Top Cryptos
+
+- Bitcoin (BTC), Ethereum (ETH), Binance Coin (BNB)
+- Cardano (ADA), Solana (SOL), Polkadot (DOT)
+- Chainlink (LINK), Litecoin (LTC), Polygon (MATIC)
+
+### 🎮 Gaming & NFT
+
+- The Sandbox (SAND), Decentraland (MANA), Axie Infinity (AXS)
+- Enjin Coin (ENJ), Gala (GALA), ApeCoin (APE), Immutable X (IMX)
+
+### 🐕 Meme Coins
+
+- Dogecoin (DOGE), Shiba Inu (SHIB), **Pepe (PEPE)**
+
+### 🏦 DeFi
+
+- Aave (AAVE), Compound (COMP), Maker (MKR), Uniswap (UNI)
+- SushiSwap (SUSHI), PancakeSwap (CAKE), Curve (CRV), Yearn Finance (YFI)
+
+### 🌐 Layer 1 & Infrastructure
+
+- TRON (TRX), NEAR Protocol (NEAR), Algorand (ALGO)
+- VeChain (VET), Filecoin (FIL), Internet Computer (ICP)
+- Hedera (HBAR), Fantom (FTM), Tezos (XTZ), Flow (FLOW)
+
+**Total: 47+ criptomonedas disponibles** 🚀
 
 ## 🔧 Configuración
 
@@ -41,12 +62,12 @@ Para habilitar el almacenamiento en la nube, edita el archivo `firebase-config.j
 
 ```javascript
 const firebaseConfig = {
-    apiKey: "tu-api-key",
-    authDomain: "tu-proyecto.firebaseapp.com",
-    projectId: "tu-proyecto-id",
-    storageBucket: "tu-proyecto.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "tu-app-id"
+  apiKey: "tu-api-key",
+  authDomain: "tu-proyecto.firebaseapp.com",
+  projectId: "tu-proyecto-id",
+  storageBucket: "tu-proyecto.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "tu-app-id",
 };
 ```
 
@@ -59,20 +80,24 @@ const firebaseConfig = {
 ## 📊 Funcionalidades
 
 ### Portfolio Management
+
 - Ingresa la cantidad de cada criptomoneda que posees
 - Ve el valor total en USD y EUR en tiempo real
 - Los datos se guardan automáticamente
 
 ### Temas
+
 - Alterna entre modo día y noche
 - Las preferencias se guardan automáticamente
 
 ### Exportar/Importar
+
 - Exporta tu portfolio en formato JSON
 - Importa datos desde archivos JSON
 - Mantén respaldos de tu información
 
 ### Gráficos
+
 - Visualiza tendencias de precios de Bitcoin
 - Datos históricos de los últimos 7 días
 - Actualización automática cada 5 minutos
@@ -80,6 +105,7 @@ const firebaseConfig = {
 ## 🎨 Diseño Responsive
 
 La aplicación está optimizada para:
+
 - **Desktop**: Grid de 3-4 columnas
 - **Tablet**: Grid de 2 columnas
 - **Mobile**: Columna única con navegación optimizada
@@ -93,11 +119,13 @@ La aplicación está optimizada para:
 ## 🛡️ Almacenamiento de Datos
 
 ### Local Storage
+
 - Almacenamiento automático en el navegador
 - Funciona sin conexión a internet
 - Datos persistentes entre sesiones
 
 ### Firebase (Opcional)
+
 - Sincronización en la nube
 - Acceso desde múltiples dispositivos
 - Respaldo automático
@@ -110,13 +138,62 @@ La aplicación está optimizada para:
 - Edge 79+
 - Dispositivos móviles iOS y Android
 
+## � Crómo Añadir Nuevas Criptomonedas
+
+¿Quieres añadir una criptomoneda que no está en la lista? ¡Es muy fácil!
+
+### Paso 1: Encontrar la información
+
+Necesitas obtener estos datos de [CoinGecko](https://coingecko.com):
+
+1. **ID**: Ve a la página de la crypto en CoinGecko, el ID está en la URL
+   - Ejemplo: `coingecko.com/en/coins/bitcoin` → ID es `bitcoin`
+2. **Nombre**: El nombre completo de la criptomoneda
+3. **Símbolo**: El ticker/símbolo (BTC, ETH, etc.)
+4. **ImageId**: Inspecciona la imagen del logo, busca el número en la URL
+
+### Paso 2: Añadir al código
+
+Edita el archivo `script.js` y añade la nueva crypto al array `AVAILABLE_CRYPTOS`:
+
+```javascript
+// Añade esta línea en la lista AVAILABLE_CRYPTOS:
+{ id: "nombre-crypto", name: "Nombre Completo", symbol: "SYMBOL", imageId: "12345" }
+```
+
+### Ejemplo Real - Añadiendo PEPE:
+
+```javascript
+{ id: "pepe", name: "Pepe", symbol: "PEPE", imageId: "29850" }
+```
+
+### Paso 3: Usar la nueva crypto
+
+1. Guarda el archivo
+2. Recarga la página
+3. Ve a Configuración (⚙️)
+4. ¡Tu nueva crypto aparecerá en la lista!
+
+### 💡 Consejos:
+
+- Usa la API de CoinGecko para verificar IDs: `https://api.coingecko.com/api/v3/coins/list`
+- Si no encuentras el imageId, usa cualquier número - aparecerá un icono genérico
+- Las cryptos se ordenan por popularidad en la lista
+
+### 🎯 Cryptos Recientemente Añadidas:
+
+- **Pepe (PEPE)** - La meme coin más popular
+- **ApeCoin (APE)** - Token del ecosistema Bored Ape
+- **Immutable X (IMX)** - Layer 2 para NFTs
+- **Gala (GALA)** - Gaming y entretenimiento
+
 ## 🚀 Próximas Características
 
-- [ ] Más criptomonedas
-- [ ] Alertas de precio
-- [ ] Análisis técnico
+- [ ] Alertas de precio personalizables
+- [ ] Análisis técnico avanzado
 - [ ] Modo offline completo
 - [ ] PWA (Progressive Web App)
+- [ ] Integración con más exchanges
 
 ## 📄 Licencia
 
